@@ -1,0 +1,9 @@
+包装对象
+boolean number string 会包装对象
+代码执行过程中发现基本类型调用方法
+系统会把基本类型 包装 var num1 =  new Number (num);
+
+var bool =true;
+ 
+var bool1=new Boolean(bool);
+
