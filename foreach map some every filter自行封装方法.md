@@ -7,25 +7,13 @@
 原理是封装一个函数，接收函数作为参数，函数里面设置循环，遍历传进来的每个参数和对应的下标。
 
 ```
-// 封装一个数组的 _forEach 方法 传参为一个函数
-        function _forEach(fn){
-            // 循环数组的每一项   谁调用的this就指向谁
-            for(let i = 0; i < this.length; i++){
-                // 循环传进来的函数的三个参数
-                fn(this[i],i,this)
+//forEach方法封装 _forEach
+        Array.prototype._forEach = function (callback, context) {
+            for (var k = 0; k < this.length; k++) {
+                callback.call(context, this[k], k, this);
             }
         }
-        
-        // 定义一个数组
-        let arr = ['4','5','6']
-        // 将定义的这个数组方法放到Array的prototype下面
-        Array.prototype._forEach = _forEach;
-        console.log(Array.prototype)
-        // 数组arr调用_forEach方法并传参
-        arr._forEach(function(item,index,arr){
-            // 打印传进来的参数
-            console.log(item,index,arr)
-        })
+
 ```
 
 ---
@@ -41,23 +29,14 @@
 封装:
 
 ```
-Array.prototype._map = function(fn, context){
-var tmp = [];
-if(typeof fn === 'function'){
-var k = 0;
-var len = this.length;
-for(; k<len; k++){
-tmp.push(fn.call(context, this[k], k, this));
-}
-}else {
-console.log("fn 不是一个函数");
-}
-return tmp;
-}
-var newArr = [1,2,3,4]._map(function(item, i, array){
-console.log(item, i, array, this);
-return item + 1;
-}, {a: 1});
+ //map方法封装 _map
+        Array.prototype._map = function (callback, context) {
+            var temp = [];
+            for (var k = 0; k < this.length; k++) {
+                temp.push(callback.call(context, this[k], k, this));
+            }
+            return temp;
+        }
 ```
 
 # Filter()
@@ -93,18 +72,15 @@ filter()方法使用指定的函数测试所有元素，并创建一个包含所
 ***自封装Filter():***
 
 ```
-Array.prototype._filter = function(func) {
-var arr = this;
-var temp = [];
-for (var i = 0; i < arr.length; i++) {
-if (func(arr[i],i,arr)) {
-temp.push(arr[i]);
-}
-}
-return temp;
-}
 
-
+        //filter方法封装 _filter
+        Array.prototype._filter = function (callback, context) {
+            var temp = [];
+            for (var k = 0; k < this.length; k++) {
+                callback.call(context, this[k], k, this) ? temp.push(this[k]) : "";
+            }
+            return temp;
+        }
 ```
 
 # Array.prototype.some()
@@ -153,34 +129,15 @@ callback
 
 
 ```
-if (!Array.prototype.some) {
-  Array.prototype.some = function(fun/*, thisArg*/) {
-    'use strict';
-
-​```
-if (this == null) {
-  throw new TypeError('Array.prototype.some called on null or undefined');
-}
-
-if (typeof fun !== 'function') {
-  throw new TypeError();
-}
-
-var t = Object(this);
-var len = t.length >>> 0;
-
-var thisArg = arguments.length >= 2 ? arguments[1] : void 0;
-for (var i = 0; i < len; i++) {
-  if (i in t && fun.call(thisArg, t[i], i, t)) {
-    return true;
-  }
-}
-
-return false;
-​```
-
-  };
-}
+     //some方法封装 _some
+        Array.prototype._some = function (callback, context) {
+            for (var k = 0; k < this.length; k++) {
+                if (callback.call(context, this[k], k, this)) {
+                    return true;
+                }
+            }
+            return false;
+        }
 ```
 
 ----
@@ -228,68 +185,15 @@ array.every(function(currentValue,index,arr), thisValue)
 # 自行封装 every
 
 ```js
-if (!Array.prototype.every) {
-  Array.prototype.every = function(callbackfn, thisArg) {
-    'use strict';
-    var T, k;
-
-    if (this == null) {
-      throw new TypeError('this is null or not defined');
-    }
-
-    // 1. Let O be the result of calling ToObject passing the this 
-    //    value as the argument.
-    var O = Object(this);
-
-    // 2. Let lenValue be the result of calling the Get internal method
-    //    of O with the argument "length".
-    // 3. Let len be ToUint32(lenValue).
-    var len = O.length >>> 0;
-
-    // 4. If IsCallable(callbackfn) is false, throw a TypeError exception.
-    if (typeof callbackfn !== 'function') {
-      throw new TypeError();
-    }
-
-    // 5. If thisArg was supplied, let T be thisArg; else let T be undefined.
-    if (arguments.length > 1) {
-      T = thisArg;
-    }
-
-    // 6. Let k be 0.
-    k = 0;
-
-    // 7. Repeat, while k < len
-    while (k < len) {
-
-      var kValue;
-
-      // a. Let Pk be ToString(k).
-      //   This is implicit for LHS operands of the in operator
-      // b. Let kPresent be the result of calling the HasProperty internal 
-      //    method of O with argument Pk.
-      //   This step can be combined with c
-      // c. If kPresent is true, then
-      if (k in O) {
-
-        // i. Let kValue be the result of calling the Get internal method
-        //    of O with argument Pk.
-        kValue = O[k];
-
-        // ii. Let testResult be the result of calling the Call internal method
-        //     of callbackfn with T as the this value and argument list 
-        //     containing kValue, k, and O.
-        var testResult = callbackfn.call(T, kValue, k, O);
-
-        // iii. If ToBoolean(testResult) is false, return false.
-        if (!testResult) {
-          return false;
+        //every方法封装 _every
+        Array.prototype._every = function (callback, context) {
+            for (var k = 0; k < this.length; k++) {
+                if (!callback.call(context, this[k], k, this)) {
+                    return false;
+                }
+            }
+            return true;
         }
-      }
-      k++;
-    }
-    return true;
-  };
-}
+
 ```
 
